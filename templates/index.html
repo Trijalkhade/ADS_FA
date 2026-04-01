@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Event Manager — Advanced Data Structures Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #000000;
+      --surface: #0a0a0a; 
+      --surface2: #141414; 
+      --surface3: #1f1f1f; 
+      --border: rgba(255,255,255,.15);
+      --border2: rgba(255,255,255,.05);
+      --purple: #ffffff;
+      --purple-d: #d4d4d4; 
+      --purple-l: #ffffff; 
+      --teal: #aaaaaa;
+      --teal-d: #888888;
+      --red: #ff6b6b;
+      --amber: #ffd93d;
+      --text: #ffffff; 
+      --text2: #a3a3a3; 
+      --muted: #666666;
+      --font-head: 'Bricolage Grotesque', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(circle, var(--border2) 1px, transparent 1px);
+      background-size: 26px 26px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .logo {
+      font-family: var(--font-head);
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--amber), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text2);
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 1rem 2rem;
+      background: transparent;
+      border: none;
+      color: var(--text2);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      color: var(--purple);
+      border-bottom-color: var(--purple);
+    }
+
+    .tab:hover {
+      color: var(--text);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .card-title {
+      font-family: var(--font-head);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--purple);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text2);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.8rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--purple);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    button {
+      background: var(--purple);
+      color: var(--bg);
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: var(--purple-d);
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      background: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: var(--text);
+    }
+
+    .events-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .event-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .event-card:hover {
+      border-color: var(--purple);
+      transform: translateX(5px);
+    }
+
+    .event-info h3 {
+      color: var(--purple);
+      margin-bottom: 0.5rem;
+    }
+
+    .event-meta {
+      display: flex;
+      gap: 1rem;
+      color: var(--text2);
+      font-size: 0.9rem;
+    }
+
+    .event-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--purple);
+      color: var(--purple);
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 1rem 3rem 1rem 1rem;
+      font-size: 1.1rem;
+    }
+
+    .clear-search-btn {
+      position: absolute;
+      right: 3rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--text2);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .clear-search-btn:hover {
+      color: var(--text);
+      background: var(--surface2);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text2);
+    }
+
+    .autocomplete-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+
+    .autocomplete-dropdown.active {
+      display: block;
+    }
+
+    .autocomplete-item {
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item.selected {
+      background: var(--surface3);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--purple);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: var(--text2);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .word-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .performance-stats {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--text2);
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .alert-success {
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      color: #4caf50;
+    }
+
+    .alert-error {
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      color: #f44336;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text2);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .word-demo {
+        grid-template-columns: 1fr;
+      }
+      
+      .events-list {
+        grid-template-columns: 1fr;
+      }
+      
+      .event-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .event-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 class="logo">Smart Event Manager</h1>
+      <p class="subtitle">Advanced Data Structures Demo — Red-Black Tree, Trie & BK-Tree</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('events', this)">📅 Event Management</button>
+      <button class="tab" onclick="switchTab('words', this)">📝 Word Intelligence</button>
+      <button class="tab" onclick="switchTab('stats', this)">📊 Data Structures</button>
+    </div>
+
+    <!-- Event Management Tab -->
+    <div id="events-tab" class="tab-content active">
+      <div class="card">
+        <h2 class="card-title">Add New Event</h2>
+        <form id="event-form">
+          <div class="form-group">
+            <label for="event-name">Event Name *</label>
+            <div class="search-box">
+              <input type="text" id="event-name" name="name" required placeholder="Start typing for suggestions...">
+              <div class="autocomplete-dropdown" id="name-autocomplete"></div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="event-date">Date *</label>
+              <input type="text" id="event-date" name="date" required placeholder="DD-MM-YYYY">
+            </div>
+            <div class="form-group">
+              <label for="event-time">Time *</label>
+              <input type="text" id="event-time" name="time" required placeholder="HH:MM">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="event-type">Type *</label>
+            <select id="event-type" name="type" required>
+              <option value="">Select type...</option>
+              <option value="work">Work</option>
+              <option value="personal">Personal</option>
+              <option value="health">Health</option>
+              <option value="education">Education</option>
+              <option value="hobby">Hobby</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="event-location">Location *</label>
+            <div class="search-box">
+              <input type="text" id="event-location" name="location" required placeholder="Start typing for suggestions...">
+              <div class="autocomplete-dropdown" id="location-autocomplete"></div>
+            </div>
+          </div>
+          
+          <button type="submit">Add Event</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Search Events</h2>
+        <div class="search-box">
+          <input type="text" id="search-input" class="search-input" placeholder="Search events with typo tolerance...">
+          <button class="clear-search-btn" onclick="clearSearch()" title="Clear search">✕</button>
+          <span class="search-icon">🔍</span>
+        </div>
+        <div id="search-results"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Events Timeline</h2>
+        <div id="events-list" class="events-list"></div>
+      </div>
+    </div>
+
+    <!-- Word Intelligence Tab -->
+    <div id="words-tab" class="tab-content">
+      <div class="word-demo">
+        <div class="card">
+          <h2 class="card-title">Word Autocomplete</h2>
+          <div class="search-box">
+            <input type="text" id="word-prefix" class="search-input" placeholder="Type a word prefix...">
+            <div class="autocomplete-dropdown" id="word-autocomplete"></div>
+          </div>
+          <div id="word-suggestions"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Spelling Correction</h2>
+          <div class="search-box">
+            <input type="text" id="word-correct" class="search-input" placeholder="Type a misspelled word...">
+          </div>
+          <div id="correction-suggestions"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Structures Tab -->
+    <div id="stats-tab" class="tab-content">
+      <div class="stats-grid" id="stats-grid"></div>
+      
+      <div class="card">
+        <h2 class="card-title">Data Structure Information</h2>
+        <div id="ds-info"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Event Modal -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="card-title">Edit Event</h2>
+        <button class="close-btn" onclick="closeEditModal()">&times;</button>
+      </div>
+      <form id="edit-form">
+        <input type="hidden" id="edit-event-id" name="id">
+        <div class="form-group">
+          <label for="edit-name">Event Name</label>
+          <input type="text" id="edit-name" name="name" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-date">Date</label>
+            <input type="text" id="edit-date" name="date" required placeholder="DD-MM-YYYY">
+          </div>
+          <div class="form-group">
+            <label for="edit-time">Time</label>
+            <input type="text" id="edit-time" name="time" required placeholder="HH:MM">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="edit-type">Type</label>
+          <select id="edit-type" name="type" required>
+            <option value="work">Work</option>
+            <option value="personal">Personal</option>
+            <option value="health">Health</option>
+            <option value="education">Education</option>
+            <option value="hobby">Hobby</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-location">Location</label>
+          <input type="text" id="edit-location" name="location" required>
+        </div>
+        <button type="submit">Update Event</button>
+        <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let events = [];
+    let currentEditingEvent = null;
+
+    // Tab switching
+    function switchTab(tabName, element) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      if (element) {
+        element.classList.add('active');
+      } else {
+        // Fallback: find the button with matching tab name
+        document.querySelector(`[onclick="switchTab('${tabName}'"]`).classList.add('active');
+      }
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+      
+      if (tabName === 'stats') {
+        loadStats();
+      }
+    }
+
+    // Event Management Functions
+    async function loadEvents() {
+      try {
+        const response = await fetch('/events');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        events = data.events || [];
+        displayEvents();
+      } catch (error) {
+        console.error('Failed to load events:', error);
+        showAlert('Failed to load events', 'error');
+        // Set empty events array to prevent further errors
+        events = [];
+        displayEvents();
+      }
+    }
+
+    function displayEvents(eventsToDisplay = events) {
+      const container = document.getElementById('events-list');
+      
+      if (eventsToDisplay.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text2);">No events found</p>';
+        return;
+      }
+
+      container.innerHTML = eventsToDisplay.map(event => `
+        <div class="event-card">
+          <div class="event-info">
+            <h3>${event.name}</h3>
+            <div class="event-meta">
+              <span>📅 ${event.date} ${event.time}</span>
+              <span>🏷️ ${event.type}</span>
+              <span>📍 ${event.location}</span>
+            </div>
+          </div>
+          <div class="event-actions">
+            <button class="icon-btn" onclick="editEvent(${event.id})" title="Edit">✏️</button>
+            <button class="icon-btn" onclick="deleteEvent(${event.id})" title="Delete">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Event form submission
+    document.getElementById('event-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const eventData = Object.fromEntries(formData);
+      
+      try {
+        const response = await fetch('/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(eventData)
+        });
+        
+        if (response.ok) {
+          showAlert('Event added successfully!', 'success');
+          e.target.reset();
+          loadEvents();
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Add event error:', errorData);
+          showAlert(errorData.error || 'Failed to add event', 'error');
+        }
+      } catch (error) {
+        console.error('Network error adding event:', error);
+        showAlert('Network error while adding event', 'error');
+      }
+    });
+
+    // Edit event
+    async function editEvent(eventId) {
+      try {
+        const event = events.find(e => e.id === eventId);
+        if (!event) {
+          console.error('Event not found:', eventId);
+          showAlert('Event not found', 'error');
+          return;
+        }
+        
+        currentEditingEvent = event;
+        document.getElementById('edit-event-id').value = event.id;
+        document.getElementById('edit-name').value = event.name || '';
+        document.getElementById('edit-date').value = event.date || '';
+        document.getElementById('edit-time').value = event.time || '';
+        document.getElementById('edit-type').value = event.type || 'work';
+        document.getElementById('edit-location').value = event.location || '';
+        
+        document.getElementById('edit-modal').classList.add('active');
+      } catch (error) {
+        console.error('Edit event error:', error);
+        showAlert('Failed to open edit dialog', 'error');
+      }
+    }
+
+    function closeEditModal() {
+      try {
+        document.getElementById('edit-modal').classList.remove('active');
+        currentEditingEvent = null;
+        // Reset form
+        const form = document.getElementById('edit-form');
+        if (form) form.reset();
+      } catch (error) {
+        console.error('Error closing modal:', error);
+      }
+    }
+
+    // Edit form submission
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!currentEditingEvent) {
+        console.error('No event currently being edited');
+        showAlert('No event selected for editing', 'error');
+        return;
+      }
+      
+      const formData = new FormData(e.target);
+      const eventData = Object.fromEntries(formData);
+      delete eventData.id; // Remove ID from update data
+      
+      try {
+        const response = await fetch(`/events/${currentEditingEvent.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(eventData)
+        });
+        
+        if (response.ok) {
+          showAlert('Event updated successfully!', 'success');
+          closeEditModal();
+          loadEvents();
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Update event error:', errorData);
+          showAlert(errorData.error || 'Failed to update event', 'error');
+        }
+      } catch (error) {
+        console.error('Network error updating event:', error);
+        showAlert('Network error while updating event', 'error');
+      }
+    });
+
+    // Delete event
+    async function deleteEvent(eventId) {
+      if (!confirm('Are you sure you want to delete this event?')) return;
+      
+      try {
+        const response = await fetch(`/events/${eventId}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          showAlert('Event deleted successfully!', 'success');
+          loadEvents();
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          showAlert(errorData.error || 'Failed to delete event', 'error');
+        }
+      } catch (error) {
+        console.error('Delete event error:', error);
+        showAlert('Network error while deleting event', 'error');
+      }
+    }
+
+    // ── Generic autocomplete (for location field) ─────────────────────────────
+    function setupAutocomplete(inputId, dropdownId, endpoint) {
+      const input    = document.getElementById(inputId);
+      const dropdown = document.getElementById(dropdownId);
+      let selectedIndex = -1;
+
+      input.addEventListener('input', async () => {
+        const value = input.value.trim().toLowerCase();
+        if (value.length < 2) { dropdown.classList.remove('active'); return; }
+
+        try {
+          const res  = await fetch(endpoint, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prefix: value, k: 10 })
+          });
+          const data = await res.json();
+          const suggestions = data.suggestions || [];
+          selectedIndex = -1;
+
+          if (suggestions.length > 0) {
+            dropdown.innerHTML = suggestions.map((s, i) =>
+              `<div class="autocomplete-item" data-index="${i}">${s}</div>`
+            ).join('');
+            dropdown.classList.add('active');
+            dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+              item.addEventListener('click', () => {
+                input.value = item.textContent;
+                dropdown.classList.remove('active');
+              });
+            });
+          } else {
+            dropdown.classList.remove('active');
+          }
+        } catch (err) { console.error('Autocomplete error:', err); }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (!dropdown.classList.contains('active')) return;
+        const items = dropdown.querySelectorAll('.autocomplete-item');
+        if (e.key === 'ArrowDown')  { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, items.length - 1); updateSelection(items, selectedIndex); }
+        else if (e.key === 'ArrowUp')   { e.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, -1); updateSelection(items, selectedIndex); }
+        else if (e.key === 'Enter') { e.preventDefault(); if (selectedIndex >= 0 && items[selectedIndex]) { input.value = items[selectedIndex].textContent; dropdown.classList.remove('active'); } }
+        else if (e.key === 'Escape') { dropdown.classList.remove('active'); }
+      });
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.remove('active');
+      });
+    }
+
+    // ── Per-word autocomplete for event name (uses word-intelligence Trie) ────
+    function setupEventNameAutocomplete() {
+      const input    = document.getElementById('event-name');
+      const dropdown = document.getElementById('name-autocomplete');
+      let selectedIndex = -1;
+      let lastPrefixWords = '';   // already-typed complete words
+      let acTimeout;
+
+      async function fetchSuggestions(fullValue) {
+        if (!fullValue.trim() || fullValue.trim().split(/\s+/).pop().length < 2) {
+          dropdown.classList.remove('active');
+          return;
+        }
+        try {
+          const res  = await fetch('/autocomplete/event-name', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prefix: fullValue.toLowerCase(), k: 10 })
+          });
+          const data = await res.json();
+          const suggestions   = data.suggestions  || [];
+          lastPrefixWords     = data.prefix_words || '';   // e.g. "team "
+          selectedIndex       = -1;
+
+          if (suggestions.length === 0) { dropdown.classList.remove('active'); return; }
+
+          dropdown.innerHTML = suggestions.map((word, i) => {
+            // Display: already-typed words + completion word
+            const display = lastPrefixWords + word;
+            return `<div class="autocomplete-item" data-word="${word}" data-display="${display}" data-index="${i}">
+                      <span style="color:var(--text2)">${lastPrefixWords}</span><strong>${word}</strong>
+                      <span style="float:right;font-size:.8em;color:var(--muted)">trie</span>
+                    </div>`;
+          }).join('');
+          dropdown.classList.add('active');
+
+          dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+            item.addEventListener('click', () => {
+              input.value = item.dataset.display;
+              dropdown.classList.remove('active');
+              input.dispatchEvent(new Event('input'));   // re-trigger if user keeps typing
+            });
+          });
+
+          // Show trie path info below dropdown as a subtle hint
+          if (data.path && data.path.length) {
+            const pathStr = data.path.map(p => p.char).join('→');
+            dropdown.setAttribute('data-path', pathStr);
+          }
+        } catch (err) { console.error('Event name autocomplete error:', err); }
+      }
+
+      input.addEventListener('input', () => {
+        clearTimeout(acTimeout);
+        acTimeout = setTimeout(() => fetchSuggestions(input.value), 120);
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (!dropdown.classList.contains('active')) return;
+        const items = dropdown.querySelectorAll('.autocomplete-item');
+        if (e.key === 'ArrowDown')  { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, items.length - 1); updateSelection(items, selectedIndex); }
+        else if (e.key === 'ArrowUp')   { e.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, -1); updateSelection(items, selectedIndex); }
+        else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (selectedIndex >= 0 && items[selectedIndex]) {
+            input.value = items[selectedIndex].dataset.display;
+            dropdown.classList.remove('active');
+          }
+        }
+        else if (e.key === 'Escape') { dropdown.classList.remove('active'); }
+      });
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.remove('active');
+      });
+    }
+
+    function updateSelection(items, selectedIndex) {
+      items.forEach((item, index) => {
+        if (index === selectedIndex) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+    }
+
+    // Clear search function
+    function clearSearch() {
+      try {
+        document.getElementById('search-input').value = '';
+        document.getElementById('search-results').innerHTML = '';
+        displayEvents();
+      } catch (error) {
+        console.error('Error clearing search:', error);
+      }
+    }
+
+    // Event search with typo tolerance
+    let searchTimeout;
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim();
+      
+      if (query.length < 2) {
+        document.getElementById('search-results').innerHTML = '';
+        displayEvents();
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        performSearch(query);
+      }, 300);
+    });
+
+    // Add keyboard support for search input
+    document.getElementById('search-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        clearSearch();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const query = e.target.value.trim();
+        if (query.length >= 2) {
+          clearTimeout(searchTimeout);
+          performSearch(query);
+        }
+      }
+    });
+
+    // Separate search function for reuse
+    async function performSearch(query) {
+      try {
+        const response = await fetch('/search-events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, max_dist: 2, k: 20 })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Search failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.events && data.events.length > 0) {
+          const searchHtml = `
+            <div class="performance-stats">
+              Found ${data.events.length} events in ${data.stats?.time_ms || 0}ms
+              (checked ${data.stats?.nodes_visited || 0} nodes, pruned ${data.stats?.nodes_pruned || 0})
+            </div>
+          `;
+          document.getElementById('search-results').innerHTML = searchHtml;
+          // Handle both direct event objects and wrapped event objects
+          const eventsToDisplay = data.events.map(e => e.event || e);
+          displayEvents(eventsToDisplay);
+        } else {
+          document.getElementById('search-results').innerHTML = '<p style="color: var(--text2);">No events found</p>';
+          displayEvents([]);
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        document.getElementById('search-results').innerHTML = '<p style="color: var(--red);">Search failed. Please try again.</p>';
+        displayEvents([]);
+      }
+    }
+
+    // Word intelligence functions
+    async function setupWordAutocomplete() {
+      const input = document.getElementById('word-prefix');
+      const dropdown = document.getElementById('word-autocomplete');
+      
+      input.addEventListener('input', async () => {
+        const value = input.value.trim().toLowerCase();
+        if (value.length < 2) {
+          dropdown.classList.remove('active');
+          return;
+        }
+
+        try {
+          const response = await fetch('/autocomplete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prefix: value, k: 10 })
+          });
+          
+          const data = await response.json();
+          
+          if (data.suggestions.length > 0) {
+            dropdown.innerHTML = data.suggestions.map(s => `
+              <div class="autocomplete-item">${s.word}</div>
+            `).join('');
+            dropdown.classList.add('active');
+            
+            dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+              item.addEventListener('click', () => {
+                input.value = item.textContent;
+                dropdown.classList.remove('active');
+                displayWordSuggestions(data.suggestions, data.stats);
+              });
+            });
+            
+            displayWordSuggestions(data.suggestions, data.stats);
+          } else {
+            dropdown.classList.remove('active');
+            document.getElementById('word-suggestions').innerHTML = '<p style="color: var(--text2);">No suggestions</p>';
+          }
+        } catch (error) {
+          console.error('Word autocomplete error:', error);
+        }
+      });
+    }
+
+    function displayWordSuggestions(suggestions, stats) {
+      const container = document.getElementById('word-suggestions');
+      container.innerHTML = `
+        <div class="performance-stats">
+          Found ${suggestions.length} suggestions in ${stats.time_ms}ms
+        </div>
+        <div style="margin-top: 1rem;">
+          ${suggestions.map(s => `
+            <div style="padding: 0.5rem; background: var(--surface2); margin-bottom: 0.5rem; border-radius: 4px;">
+              <strong>${s.word}</strong> (frequency: ${s.frequency})
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Spelling correction
+    let correctionTimeout;
+    document.getElementById('word-correct').addEventListener('input', (e) => {
+      clearTimeout(correctionTimeout);
+      const word = e.target.value.trim().toLowerCase();
+      
+      if (word.length < 2) {
+        document.getElementById('correction-suggestions').innerHTML = '';
+        return;
+      }
+
+      correctionTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch('/autocorrect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ word, k: 10, max_dist: 2 })
+          });
+          
+          const data = await response.json();
+          
+          if (data.suggestions.length > 0) {
+            const container = document.getElementById('correction-suggestions');
+            container.innerHTML = `
+              <div class="performance-stats">
+                Found ${data.suggestions.length} corrections in ${data.stats.time_ms}ms
+                (checked ${data.stats.nodes_visited} nodes, pruned ${data.stats.nodes_pruned})
+              </div>
+              <div style="margin-top: 1rem;">
+                ${data.suggestions.map(s => `
+                  <div style="padding: 0.5rem; background: var(--surface2); margin-bottom: 0.5rem; border-radius: 4px;">
+                    <strong>${s.word}</strong> (distance: ${s.distance}, frequency: ${s.frequency})
+                  </div>
+                `).join('')}
+              </div>
+            `;
+          } else {
+            document.getElementById('correction-suggestions').innerHTML = '<p style="color: var(--text2);">No corrections found</p>';
+          }
+        } catch (error) {
+          console.error('Spelling correction error:', error);
+        }
+      }, 300);
+    });
+
+    // Load statistics
+    async function loadStats() {
+      try {
+        const [eventStatsResponse, wordStatsResponse] = await Promise.all([
+          fetch('/event-stats'),
+          fetch('/stats')
+        ]);
+
+        if (!eventStatsResponse.ok || !wordStatsResponse.ok) {
+          throw new Error('Failed to fetch statistics');
+        }
+
+        const [eventStats, wordStats] = await Promise.all([
+          eventStatsResponse.json(),
+          wordStatsResponse.json()
+        ]);
+
+        // Display event stats
+        const statsGrid = document.getElementById('stats-grid');
+        statsGrid.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-number">${eventStats.red_black_tree.total_events || 0}</div>
+            <div class="stat-label">Total Events</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${eventStats.red_black_tree.tree_height || 0}</div>
+            <div class="stat-label">RBT Height</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${eventStats.name_trie.nodes || 0}</div>
+            <div class="stat-label">Name Trie Nodes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${eventStats.location_trie.nodes || 0}</div>
+            <div class="stat-label">Location Trie Nodes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${eventStats.search_tree.size || 0}</div>
+            <div class="stat-label">Search BK-Tree Size</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${wordStats.trie_nodes || 0}</div>
+            <div class="stat-label">Word Trie Nodes</div>
+          </div>
+        `;
+
+        // Display data structure info
+        const dsInfo = document.getElementById('ds-info');
+        dsInfo.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+              <h3 style="color: var(--purple); margin-bottom: 1rem;">Event Management</h3>
+              <ul style="color: var(--text2); line-height: 1.8;">
+                <li><strong>Red-Black Tree:</strong> Stores events chronologically with O(log n) operations</li>
+                <li><strong>Name Trie:</strong> Fast autocomplete for event names</li>
+                <li><strong>Location Trie:</strong> Location suggestions and autocomplete</li>
+                <li><strong>BK-Tree:</strong> Fuzzy search with typo tolerance</li>
+              </ul>
+            </div>
+            <div>
+              <h3 style="color: var(--purple); margin-bottom: 1rem;">Word Intelligence</h3>
+              <ul style="color: var(--text2); line-height: 1.8;">
+                <li><strong>Main Trie:</strong> 10,000 words for autocomplete</li>
+                <li><strong>BK-Tree:</strong> 5,000 words for spelling correction</li>
+                <li><strong>Letter Frequencies:</strong> Used for graph visualization</li>
+                <li><strong>Bigram Analysis:</strong> Letter co-occurrence patterns</li>
+              </ul>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Stats loading error:', error);
+        showAlert('Failed to load statistics', 'error');
+      }
+    }
+
+    // Utility functions
+    function showAlert(message, type) {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      alert.style.position = 'fixed';
+      alert.style.top = '20px';
+      alert.style.right = '20px';
+      alert.style.zIndex = '3000';
+      alert.style.maxWidth = '300px';
+      
+      document.body.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.remove();
+      }, 3000);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadEvents();
+      setupEventNameAutocomplete();                                        // per-word, word-intelligence trie
+      setupAutocomplete('event-location', 'location-autocomplete', '/autocomplete/location');
+      setupWordAutocomplete();
+    });
+  </script>
+</body>
+</html>
